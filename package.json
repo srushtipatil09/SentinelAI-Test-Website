@@ -1,0 +1,30 @@
+{
+  "name": "sentinel-test-app",
+  "version": "1.0.0",
+  "description": "Telemetry generator and Sentinel SDK validation Express application",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "node --watch app.js"
+  },
+  "keywords": [
+    "sentinel",
+    "telemetry",
+    "express",
+    "monitoring",
+    "tracing",
+    "logs",
+    "metrics",
+    "sdk"
+  ],
+  "author": "Sentinel Team",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "mongoose": "^8.9.5",
+    "morgan": "^1.10.0",
+    "uuid": "^11.0.5"
+  }
+}
