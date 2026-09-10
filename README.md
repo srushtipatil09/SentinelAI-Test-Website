@@ -57,7 +57,7 @@ cp .env.example .env
 ```
 Ensure your `.env` contains:
 ```env
-PORT=3000
+PORT=3001
 SENTINEL_API_KEY=test_sdk_api_key_12345
 SENTINEL_ENDPOINT=http://127.0.0.1:8000/api/v1/sdk/ingest
 MONGO_URI=mongodb://localhost:27017/sentinel_demo
@@ -78,7 +78,7 @@ npm run dev
 
 | Method | Endpoint | Description | Telemetry Captured |
 |---|---|---|---|
-| `GET` | `/` | Root Welcome & Status | `INFO` log, HTTP Trace Span |
+| `GET` | `/` | Root Welcome & Status | `INFO` log, HTTP Trace Span, Full API Docs |
 | `GET` | `/health` | Service Health check | Returns `{ status: "healthy", service: "sentinel-demo-service", version: "1.0.0" }` |
 | `GET` | `/products` | View catalog | Log: `Product Viewed`, Mongoose child trace span |
 | `GET` | `/products/:id` | View item detail | Log: `Product Viewed`, Item trace span |
@@ -88,6 +88,34 @@ npm run dev
 | `POST` | `/payment` | Payment processing | **30% random failure rate**. Logs: `Payment Initiated` / `Payment Failed`, Payment service span |
 | `GET` | `/users` | Get user list | Log: `Users List Retrieved`, DB find span |
 | `GET` | `/analytics` | System telemetry metrics | Emits CPU %, RSS memory, Heap memory, Active Users, Error Rate, Avg Response Time |
+
+### 💥 Error Telemetry Suite for AI RCA & Incident Analysis (`/errors/*`)
+
+| Method | Endpoint | HTTP Status | Exception / Failure Simulated | AI RCA / Incident Target |
+|---|---|---|---|---|
+| `GET` | `/errors` | `200` | Catalog of all failure endpoints | Service discovery & automated crawlers |
+| `GET` | `/errors/unauthorized` | `401` | `TokenExpiredError: jwt expired` | Security incident, auth token expiration |
+| `GET` | `/errors/forbidden` | `403` | `AccessDeniedError: Missing 'system:admin' role` | RBAC authorization violation |
+| `GET` | `/errors/rate-limit` | `429` | `RateLimitExceededException: 100 req/min exceeded` | API quota breach & spike detection |
+| `POST` / `GET` | `/errors/validation` | `422` | `ValidationError: Schema validation failed` | Malformed payload / bad request diagnostics |
+| `GET` | `/errors/not-found` | `404` | `ResourceNotFoundException: Order not found` | Missing resource lookup tracing |
+| `GET` | `/errors/circuit-breaker` | `503` | `CircuitBreakerOpenException: Downstream circuit OPEN` | Microservice cascading failure detection |
+| `GET` | `/errors/gateway-timeout` | `504` | `GatewayTimeoutError: Upstream partner timed out (5000ms)` | External partner latency / timeout tracing |
+| `GET` | `/errors/upstream-failure` | `502` | `BadGatewayError: ECONNREFUSED 10.0.4.15:9092` | Network partition / downstream crash |
+| `GET` | `/errors/dns-failure` | `502` | `DnsResolutionError: ENOTFOUND idp.internal.aws` | DNS resolution failure |
+| `GET` | `/errors/deadlock` | `500` | `DeadlockDetectedError: Transaction deadlock victim` | Database concurrency contention |
+| `GET` | `/errors/connection-pool-exhausted` | `500` | `ConnectionPoolExhaustedError: Pool capacity 20 reached` | Database resource saturation |
+| `GET` | `/errors/null-pointer` | `500` | `TypeError: Cannot read properties of undefined` | Code bug & unhandled exception RCA |
+| `GET` | `/errors/memory-leak` | `500` | `RangeError: Array buffer allocation failed` | Memory pressure & OOM risk anomaly |
+| `GET` | `/errors/disk-full` | `500` | `SystemError: ENOSPC: no space left on device` | Storage exhaustion & infrastructure failure |
+| `GET` | `/errors/unhandled-rejection` | `500` | `UnhandledPromiseRejection: Background worker failed` | Async background queue failure |
+| `ALL` | `/errors/simulate` | *Any* | Dynamic error parameterized by `?status=&type=&component=&message=&delay=` | Arbitrary test scenario injection |
+| `GET` | `/errors/burst` | `200` | Generates 10-20 rapid mixed exceptions & flushes SDK | Sudden incident threshold trigger |
+
+### 🛠️ Legacy Failure & Stress Routes
+
+| Method | Endpoint | Description | Telemetry Captured |
+|---|---|---|---|
 | `GET` | `/error` | Forced Exception | Throws `Error("Payment Gateway Connection Failed")`, Exception capture & Error log |
 | `GET` | `/slow` | Latency simulation | Delays 3-5 seconds, High-latency trace span |
 | `GET` | `/database` | DB Timeout simulation | Throws `MongooseError("Operation timed out after 3000ms")`, Log: `Database Timeout` |
@@ -99,14 +127,17 @@ npm run dev
 ## 🔍 Validation Checklist
 
 1. **Basic Request Tracking**:
-   Visit `http://localhost:3000/` or `http://localhost:3000/health`. Check console for HTTP trace span generation.
-2. **Error & RCA Capture**:
-   Visit `http://localhost:3000/error`. Verify that `sdk.captureException` logs the stacktrace and sends an `ERROR` log to backend.
-3. **Latency Verification**:
-   Visit `http://localhost:3000/slow`. Verify that duration telemetry records 3000-5000ms span latency.
-4. **Stress & Batching Verification**:
-   Visit `http://localhost:3000/stress`. Verify console log output:
-   `[Sentinel SDK] Flushed 130 telemetry items successfully to http://127.0.0.1:8000/api/v1/sdk/ingest (Status: 202)`
+   Visit `http://localhost:3001/` or `http://localhost:3001/health`. Check console for HTTP trace span generation.
+2. **Error Catalog**:
+   Visit `http://localhost:3001/errors` to inspect all available failure scenarios.
+3. **Dynamic Error Injection**:
+   Visit `http://localhost:3001/errors/simulate?status=503&type=CustomServiceError&component=BillingService`.
+4. **Trigger Incident Wave for AI RCA**:
+   Visit `http://localhost:3001/errors/burst?count=15`. Check Sentinel AI backend dashboard for detected incidents.
+5. **Run Integration Test Suite**:
+   ```bash
+   node test-runner.js
+   ```
 
 ---
 

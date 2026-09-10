@@ -6,7 +6,7 @@ const getRoot = (sdk) => (req, res) => {
 
   return res.status(200).json({
     message: 'Sentinel Express SDK Testing Application',
-    description: 'Telemetry Generator and SDK Validation Harness',
+    description: 'Telemetry Generator, SDK Validation, and AI RCA Testing Harness',
     docs: {
       health: '/health',
       products: '/products',
@@ -15,11 +15,33 @@ const getRoot = (sdk) => (req, res) => {
       orders: 'POST /orders',
       payment: 'POST /payment',
       analytics: '/analytics',
-      errorTest: '/error',
-      slowTest: '/slow',
-      databaseTest: '/database',
-      crashTest: '/crash',
-      stressTest: '/stress'
+      errorSuiteCatalog: '/errors',
+      errors: {
+        unauthorized: '/errors/unauthorized (401)',
+        forbidden: '/errors/forbidden (403)',
+        rateLimit: '/errors/rate-limit (429)',
+        validation: 'POST /errors/validation (422)',
+        notFound: '/errors/not-found (404)',
+        circuitBreaker: '/errors/circuit-breaker (503)',
+        gatewayTimeout: '/errors/gateway-timeout (504)',
+        upstreamFailure: '/errors/upstream-failure (502)',
+        dnsFailure: '/errors/dns-failure (502)',
+        deadlock: '/errors/deadlock (500)',
+        connectionPoolExhausted: '/errors/connection-pool-exhausted (500)',
+        nullPointer: '/errors/null-pointer (500)',
+        memoryLeak: '/errors/memory-leak (500)',
+        diskFull: '/errors/disk-full (500)',
+        unhandledRejection: '/errors/unhandled-rejection (500)',
+        dynamicSimulator: '/errors/simulate?status=503&type=CustomError&component=Billing',
+        incidentBurst: '/errors/burst?count=15'
+      },
+      legacyErrorTests: {
+        errorTest: '/error',
+        slowTest: '/slow',
+        databaseTest: '/database',
+        crashTest: '/crash',
+        stressTest: '/stress'
+      }
     }
   });
 };

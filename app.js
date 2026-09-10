@@ -10,6 +10,7 @@ const createAuthRouter = require('./routes/auth');
 const createProductRouter = require('./routes/products');
 const createOrderRouter = require('./routes/orders');
 const createPaymentRouter = require('./routes/payment');
+const createErrorRouter = require('./routes/errors');
 
 // Initialize Sentinel SDK as specified in requirements
 const sdk = new SentinelClient({
@@ -39,6 +40,7 @@ app.use('/', createAuthRouter(sdk));
 app.use('/products', createProductRouter(sdk));
 app.use('/orders', createOrderRouter(sdk));
 app.use('/payment', createPaymentRouter(sdk));
+app.use('/errors', createErrorRouter(sdk));
 app.use('/', createMainRouter(sdk));
 
 // 4. Sentinel SDK Express Error Handler
@@ -46,7 +48,8 @@ app.use(sdk.expressErrorHandler());
 
 // Standard Fallback Error Handling Middleware
 app.use((err, req, res, next) => {
-  res.status(err.status || 500).json({
+  const status = err.statusCode || err.status || 500;
+  res.status(status).json({
     error: err.name || 'InternalServerError',
     message: err.message || 'An unexpected error occurred',
     traceId: req.sentinel ? req.sentinel.traceId : (req.observeAi ? req.observeAi.traceId : null)
